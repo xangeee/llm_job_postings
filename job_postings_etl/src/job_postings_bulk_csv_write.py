@@ -58,7 +58,7 @@ def load_jobs_graph_from_csv() -> None:
                             name: companies.name,
                             speciality: companies.speciality,
                             description: companies.description,
-                            company_size: companies.company_size,
+                            company_size: toInteger(companies.company_size),
                             url: companies.url
                             }});
         """
@@ -70,27 +70,27 @@ def load_jobs_graph_from_csv() -> None:
         LOAD CSV WITH HEADERS
         FROM '{EMPLOYEES_CSV_PATH}' AS employees
         MERGE (e:Employee {{id: toInteger(employees.id),
-                            employee_count: employees.employee_count,
-                            follower_count: employees.follower_count
+                            employee_count: toInteger(employees.employee_count),
+                            follower_count: toInteger(employees.follower_count)
                             }});
         """
         _ = session.run(query, {})
 
 
-    LOGGER.info("Loading company location nodes")
-    with driver.session(database="neo4j") as session:
-        query = f"""
-        LOAD CSV WITH HEADERS
-        FROM '{LOCATION_COMPANY_CSV_PATH}' AS locations
-        MERGE (l:Location {{id: toInteger(locations.id),
-                            industry: locations.industry,
-                            country: locations.country,
-                            city: locations.city,
-                            zip_code: locations.zip_code,
-                            address: locations.address
-                            }});
-        """
-        _ = session.run(query, {})
+    # LOGGER.info("Loading company location nodes")
+    # with driver.session(database="neo4j") as session:
+    #     query = f"""
+    #     LOAD CSV WITH HEADERS
+    #     FROM '{LOCATION_COMPANY_CSV_PATH}' AS locations
+    #     MERGE (l:Location {{id: toInteger(locations.id),
+    #                         industry: locations.industry,
+    #                         country: locations.country,
+    #                         city: locations.city,
+    #                         zip_code: locations.zip_code,
+    #                         address: locations.address
+    #                         }});
+    #     """
+    #     _ = session.run(query, {})
 
 
     LOGGER.info("Loading job location nodes")
@@ -114,12 +114,12 @@ def load_jobs_graph_from_csv() -> None:
         MERGE (j:Job_posting {{id: toInteger(jobs.job_id),
                             title:jobs.title,
                             description: jobs.description,
-                            views: jobs.views,
+                            views: toInteger(jobs.views),
                             job_posting_url: jobs.job_posting_url,
                             application_url: jobs.application_url,
                             application_type:jobs.application_type,
                             sponsored:jobs.sponsored,
-                            skills = jobs.skills
+                            skills:jobs.skills
 
         }})
             ON CREATE SET j.formatted_experience_level = jobs.formatted_experience_level
@@ -174,15 +174,15 @@ def load_jobs_graph_from_csv() -> None:
         _ = session.run(query, {})
 
 
-    LOGGER.info("Loading 'located_in' relationships")
-    with driver.session(database="neo4j") as session:
-        query = f"""
-        LOAD CSV WITH HEADERS FROM '{COMPANY_CSV_PATH}' AS row
-            MATCH (v:Company {{id: toInteger(row.company_id)}})
-            MATCH (r:Location {{id: toInteger(row.location_id)}})
-            MERGE (v)-[located_in:LOCATED_IN]->(r)
-        """
-        _ = session.run(query, {})
+    # LOGGER.info("Loading 'located_in' relationships")
+    # with driver.session(database="neo4j") as session:
+    #     query = f"""
+    #     LOAD CSV WITH HEADERS FROM '{COMPANY_CSV_PATH}' AS row
+    #         MATCH (v:Company {{id: toInteger(row.company_id)}})
+    #         MATCH (r:Location {{id: toInteger(row.location_id)}})
+    #         MERGE (v)-[located_in:LOCATED_IN]->(r)
+    #     """
+    #     _ = session.run(query, {})
 
 
 
